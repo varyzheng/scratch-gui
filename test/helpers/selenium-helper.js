@@ -14,13 +14,20 @@ class SeleniumHelper {
             'clickText',
             'clickButton',
             'clickXpath',
+            'elementIsVisible',
             'findByText',
             'findByXpath',
             'getDriver',
+            'getSauceDriver',
             'getLogs',
             'loadUri',
-            'rightClickText'
+            'rightClickText',
+            'waitUntilGone'
         ]);
+    }
+
+    elementIsVisible (element) {
+        return this.driver.wait(until.elementIsVisible(element));
     }
 
     get scope () {
@@ -42,10 +49,32 @@ class SeleniumHelper {
         if (USE_HEADLESS) {
             args.push('--headless');
         }
+
+        // Stub getUserMedia to always not allow access
+        args.push('--use-fake-ui-for-media-stream=deny');
+
         chromeCapabilities.set('chromeOptions', {args});
+        chromeCapabilities.setLoggingPrefs({
+            performance: 'ALL'
+        });
         this.driver = new webdriver.Builder()
             .forBrowser('chrome')
             .withCapabilities(chromeCapabilities)
+            .build();
+        return this.driver;
+    }
+
+    getSauceDriver (username, accessKey, configs) {
+        this.driver = new webdriver.Builder()
+            .withCapabilities({
+                browserName: configs.browserName,
+                platform: configs.platform,
+                version: configs.version,
+                username: username,
+                accessKey: accessKey
+            })
+            .usingServer(`http://${username}:${accessKey
+            }@ondemand.saucelabs.com:80/wd/hub`)
             .build();
         return this.driver;
     }
@@ -89,6 +118,10 @@ class SeleniumHelper {
 
     clickButton (text) {
         return this.clickXpath(`//button//*[contains(text(), '${text}')]`);
+    }
+
+    waitUntilGone (element) {
+        return this.driver.wait(until.stalenessOf(element));
     }
 
     getLogs (whitelist) {

@@ -5,11 +5,12 @@
     display: flex;
     justify-content: flex-start;
     align-content: flex-start;
+    align-items: flex-start;
     background: $ui-secondary;
     flex-grow: 1;
     flex-wrap: wrap;
     overflow-y: auto;
-    height: calc(100% - $library-header-height);
+    height: auto;
     padding: 0.5rem;
 }
 

@@ -22,17 +22,37 @@ const base = {
     },
     output: {
         library: 'GUI',
-        filename: '[name].js'
+        filename: '[name].js',
+        chunkFilename: 'chunks/[name].js'
     },
     externals: {
         React: 'react',
         ReactDOM: 'react-dom'
     },
+    resolve: {
+        symlinks: false
+    },
     module: {
         rules: [{
             test: /\.jsx?$/,
             loader: 'babel-loader',
-            include: path.resolve(__dirname, 'src')
+            include: [path.resolve(__dirname, 'src'), /node_modules[\\/]scratch-[^\\/]+[\\/]src/],
+            options: {
+                // Explicitly disable babelrc so we don't catch various config
+                // in much lower dependencies.
+                babelrc: false,
+                plugins: [
+                    '@babel/plugin-syntax-dynamic-import',
+                    '@babel/plugin-transform-async-to-generator',
+                    '@babel/plugin-proposal-object-rest-spread',
+                    ['react-intl', {
+                        messagesDir: './translations/messages/'
+                    }]],
+                presets: [
+                    ['@babel/preset-env', {targets: {browsers: ['last 3 versions', 'Safari >= 8', 'iOS >= 8']}}],
+                    '@babel/preset-react'
+                ]
+            }
         },
         {
             test: /\.css$/,
@@ -161,7 +181,7 @@ module.exports = [
         ])
     })
 ].concat(
-    process.env.NODE_ENV === 'production' ? (
+    process.env.NODE_ENV === 'production' || process.env.BUILD_MODE === 'dist' ? (
         // export as library
         defaultsDeep({}, base, {
             target: 'web',
@@ -170,7 +190,8 @@ module.exports = [
             },
             output: {
                 libraryTarget: 'umd',
-                path: path.resolve('dist')
+                path: path.resolve('dist'),
+                publicPath: '/static/'
             },
             externals: {
                 React: 'react',

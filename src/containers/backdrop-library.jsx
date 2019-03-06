@@ -2,6 +2,7 @@ import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {defineMessages, injectIntl, intlShape} from 'react-intl';
+import {connect} from 'react-redux';
 import VM from 'scratch-vm';
 
 import analytics from '../lib/analytics';
@@ -33,6 +34,7 @@ class BackdropLibrary extends React.Component {
             bitmapResolution: item.info.length > 2 ? item.info[2] : 1,
             skinId: null
         };
+        this.props.vm.setEditingTarget(this.props.stageID);
         this.props.vm.addBackdrop(item.md5, vmBackdrop);
         analytics.event({
             category: 'library',
@@ -57,7 +59,17 @@ class BackdropLibrary extends React.Component {
 BackdropLibrary.propTypes = {
     intl: intlShape.isRequired,
     onRequestClose: PropTypes.func,
+    stageID: PropTypes.string.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 
-export default injectIntl(BackdropLibrary);
+const mapStateToProps = state => ({
+    stageID: state.scratchGui.targets.stage.id
+});
+
+const mapDispatchToProps = () => ({});
+
+export default injectIntl(connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(BackdropLibrary));
